@@ -1,8 +1,16 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import TheNavigation from './components/TheNavigation.vue';
+import InvoiceModal from './components/InvoiceModal.vue';
+import { useInvoiceModal } from './stores/invoiceModal';
+import { storeToRefs } from 'pinia';
+
+const store = useInvoiceModal()
+
+const { invoiceModal } = storeToRefs(store)
 
 const mobile = ref(null)
+
 const checkScreen = () => {
   const windowWidth = window.innerWidth
 
@@ -23,6 +31,9 @@ onMounted(() => {
   <div class="flex bg-[#00031f] min-h-screen flex-col lg:flex-row" v-if="mobile === false">
     <TheNavigation />
     <div class="flex flex-col px-0 py-5 flex-1 relative">
+      <Transition name="invoiceModal">
+        <InvoiceModal v-if="invoiceModal" />
+      </Transition>
       <RouterView />
     </div>
   </div>
@@ -32,3 +43,18 @@ onMounted(() => {
     <p class="mt-6 text-sm">To use this app, please upgrade to tablet or desktop.</p>
   </div>
 </template>
+
+<style scoped>
+.invoiceModal-enter-active {
+  transition: opacity .5s ease;
+}
+.invoiceModal-leave-active {
+  transition: opacity .5s ease;
+}
+.invoiceModal-leave-to {
+  opacity: 0;
+}
+.invoiceModal-enter-from {
+   opacity: 0;
+}
+</style>

@@ -1,12 +1,17 @@
 <script setup>
 import { Icon } from "@iconify/vue";
 import { ref } from "vue";
+import { useInvoiceModal } from '../stores/invoiceModal'
+
+const store = useInvoiceModal()
+
+const { toggle } = (store)
 
 const filterMenu = ref(false)
 
 const toggleFilterMenu = () => filterMenu.value = !filterMenu.value
 
-const newInvoice = () => {}
+const newInvoice = () => toggle()
 </script>
 
 <template>
