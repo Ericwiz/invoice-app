@@ -4,14 +4,20 @@ import { Icon } from "@iconify/vue";
 import { useInvoiceModal } from '../stores/invoiceModal'
 import { useNow, useDateFormat } from '@vueuse/core'
 import { uid } from "uid";
+import db from '../firebase'
+import { addDoc, collection, doc, getDoc } from "firebase/firestore";
+import { storeToRefs } from "pinia";
+import { useRoute } from 'vue-router';
 
+const route = useRoute()
 const store = useInvoiceModal()
-const { toggle } = (store)
+const { modalStateText, toggleEdit } = storeToRefs(store)
+const { toggleWarningModal, toggle } = (store)
 
 
 const formattedDate = useDateFormat(useNow(), 'MMM DD, YYYY')
-const loading = ref(null)
-const docId = ref(null)
+// const loading = ref(null)
+// const docId = ref(null)
 const billerStreetAddress = ref(null)
 const billerCity = ref(null)
 const billerZipCode = ref(null)
@@ -31,18 +37,113 @@ const invoicePending = ref(null)
 const invoiceDraft = ref(null)
 const invoiceItemList = ref([])
 const invoiceTotal = ref(0)
+const invoiceWrap = ref(null)
 
-
+// Close invoice form
 const closeInvoice = () => toggle()
+// Check click 
+const checkClick = function (e) {
+    if (e.target === invoiceWrap.value) {
+        toggleWarningModal()
+        return;
+    }
+}
+// publish invoice btn
+const publishInvoice = () => invoicePending.value = true
+// save invoice btn
+const saveDraft = () => invoiceDraft.value = true
 
-onMounted(() => {
-  // get invoice current date
-  invoiceDate.value = formattedDate.value
-}) 
+const calculateInvoiceTotal = () => {
+    invoiceTotal.value = 0
+    invoiceItemList.value.forEach(item => {
+        invoiceTotal.value += item.total
+    })
+}
+
+const uploadInvoice = async () => {
+    if (invoiceItemList.value.length <= 0) {
+        alert('Please fill out the work items!')
+        return;
+    }
+    calculateInvoiceTotal()
+
+    // Upload a new invoice
+    try {
+        await addDoc(collection(db, 'invoices'), {
+            invoiceId: uid(),
+            billerStreetAddress: billerStreetAddress.value,
+            billerCity: billerCity.value,
+            billerZipCode: billerZipCode.value,
+            billerCountry: billerCountry.value,
+            clientName: clientName.value,
+            clientEmail: clientEmail.value,
+            clientStreetAddress: clientStreetAddress.value,
+            clientCity: clientCity.value,
+            clientZipCode: clientZipCode.value,
+            clientCountry: clientCountry.value,
+            invoiceDate: invoiceDate.value,
+            invoiceDateUnix: formattedDate.value,
+            paymentTerms: paymentTerms.value,
+            paymentDueDate: paymentDueDate.value,
+            paymentDueDateUnix: paymentDueDateUnix.value,
+            productDescription: productDescription.value,
+            invoiceItemList: invoiceItemList.value,
+            invoiceTotal: invoiceTotal.value,
+            invoicePending: invoicePending.value,
+            invoiceDraft: invoiceDraft.value,
+            invoicePaid: null,
+        })
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+const submitForm = () => {
+    toggle()
+    uploadInvoice()
+}
+
+
+async function updateForm() {
+    if (toggleEdit.value) {
+        const docRef = doc(db, 'invoices', route.params.invoiceId);
+        const currentInvoice = await getDoc(docRef)
+        const invoice = currentInvoice.data()
+        billerStreetAddress.value = invoice.billerStreetAddress
+        billerCity.value = invoice.billerCity
+        billerZipCode.value = invoice.billerZipCode
+        billerCountry.value = invoice.billerCountry
+        clientName.value = invoice.clientName
+        clientEmail.value = invoice.clientEmail
+        clientStreetAddress.value = invoice.clientStreetAddress
+        clientCity.value = invoice.clientCity
+        clientZipCode.value = invoice.clientZipCode
+        clientCountry.value = invoice.clientCountry
+        invoiceDate.value = invoice.invoiceDate
+        formattedDate.value = invoice.invoiceDateUnix
+        paymentTerms.value = invoice.paymentTerms
+        paymentDueDate.value = invoice.paymentDueDate
+        paymentDueDateUnix.value = invoice.paymentDueDateUnix
+        productDescription.value = invoice.productDescription
+        invoiceItemList.value = invoice.invoiceItemList
+        invoiceTotal.value = invoice.invoiceTotal
+        invoicePending.value = invoice.invoicePending
+        invoiceDraft.value = invoice.invoiceDraft
+        return
+    }
+}
+
+onMounted( () => {
+    // get invoice current date
+    if (!toggleEdit.value) {
+        invoiceDate.value = formattedDate.value
+    }
+    updateForm()
+})
 
 watch(paymentTerms, () => {
-    const futureDate = new Date() 
-    paymentDueDateUnix.value = futureDate.setDate(futureDate.getDate() + parseInt(paymentTerms.value)) 
+    const futureDate = new Date()
+    paymentDueDateUnix.value = futureDate.setDate(futureDate.getDate() + parseInt(paymentTerms.value))
     paymentDueDate.value = useDateFormat(paymentDueDateUnix.value, 'MMM DD, YYYY').value
 })
 
@@ -62,10 +163,11 @@ const deleteInvoiceItem = (id) => {
 </script>
 
 <template>
-    <div ref="invoiceWrap" @click="checkClick" class="fixed overflow-scroll top-0 left-0 bg-transparent h-full lg:left-[90px] w-full flex flex-col z-50">
+    <div ref="invoiceWrap" @click="checkClick"
+        class="fixed overflow-scroll top-0 left-0 bg-transparent h-full lg:left-[90px] w-full flex flex-col z-50">
         <form @submit.prevent="submitForm" class="invoice-form relative p-14 max-w-[700px] shadow-form-shadow 
         w-full bg-[#141625] text-white">
-            <h1 class="mb-12 text-white">New Invoice</h1>
+            <h1 class="mb-4 text-2xl font-bold">{{ modalStateText }}</h1>
 
             <!-- Bill From -->
             <div class="flex flex-col bill-from mb-12">
@@ -145,7 +247,7 @@ const deleteInvoiceItem = (id) => {
                 </div>
                 <div class="input flex flex-col">
                     <label for="paymentTerms">Payment Terms</label>
-                    <select required type="text" id="paymentTerms" v-model="paymentTerms">
+                    <select required id="paymentTerms" v-model="paymentTerms">
                         <option value="20">Next 20 days</option>
                         <option value="30">Next 30 days</option>
                         <option value="40">Next 40 days</option>
@@ -162,29 +264,32 @@ const deleteInvoiceItem = (id) => {
                 <div class="work-items">
                     <h3 class="mb-4 text-lg text-[#777f98]">Item List</h3>
                     <!-- <table class="w-full flex flex-col"> -->
-                        <div class="table-heading gap-4 text-xs flex justify-between mb-4">
-                            <span class="">Item Name</span>
-                            <span class="pr-8">Qty</span>
-                            <span class="pr-6">Price</span>
-                            <span class="mr-10">Total</span>
-                        </div>
+                    <div class="table-heading gap-4 text-xs flex justify-between mb-4">
+                        <span class="">Item Name</span>
+                        <span class="pr-8">Qty</span>
+                        <span class="pr-6">Price</span>
+                        <span class="mr-10">Total</span>
+                    </div>
 
-                        <div class="table-items mb-6 relative gap-6 text-xs flex justify-between w-full" v-for="(item, index) in invoiceItemList" :key="index">
-                            <div>
-                                <input class="w-[100%]" type="text" v-model="item.itemName">
-                            </div>
-                            <div class="">
-                                <input class="w-[100%]" type="text" v-model="item.qty">
-                            </div>
-                            <div>
-                                <input class="w-[100%]" type="text" v-model="item.price">
-                            </div>
-                            <span class="self-center">${{ item.total = item.qty * item.price }}</span>
-                            <Icon @click="deleteInvoiceItem(item.id)" icon="material-symbols:delete"  class="w-6 h-8 m-auto cursor-pointer"/>
+                    <div class="table-items mb-6 relative gap-6 text-xs flex justify-between w-full"
+                        v-for="(item, index) in invoiceItemList" :key="index">
+                        <div>
+                            <input required class="w-[100%]" type="text" v-model="item.itemName">
                         </div>
+                        <div class="">
+                            <input required class="w-[100%]" type="text" v-model="item.qty">
+                        </div>
+                        <div>
+                            <input required class="w-[100%]" type="text" v-model="item.price">
+                        </div>
+                        <span class="self-center">${{ item.total = item.qty * item.price }}</span>
+                        <Icon @click="deleteInvoiceItem(item.id)" icon="material-symbols:delete"
+                            class="w-6 h-8 m-auto cursor-pointer" />
+                    </div>
 
-                    <div @click="addNewInvoiceItem" class="flex rounded-full py-2  bg-[#01051b] text-white items-center justify-center w-full cursor-pointer">
-                        <Icon icon="typcn:plus-outline" class="mr-1"/>
+                    <div @click="addNewInvoiceItem"
+                        class="flex rounded-full py-2  bg-[#01051b] text-white items-center justify-center w-full cursor-pointer">
+                        <Icon icon="typcn:plus-outline" class="mr-1" />
                         <span>Add New Item</span>
                     </div>
                 </div>
@@ -193,11 +298,15 @@ const deleteInvoiceItem = (id) => {
             <!-- Save/Exit -->
             <div class="save flex mt-10">
                 <div @click="closeInvoice" class="left flex-1">
-                    <button class="bg-red-600 rounded-full px-5 py-3">Cancel</button>
+                    <button type="button" class="bg-red-600 rounded-full px-5 py-3">Cancel</button>
                 </div>
                 <div class="flex flex-1 justify-end space-x-5">
-                    <button @click="saveDraft" class="bg-purple-950 rounded-full px-4 py-3">Save as Draft</button>
-                    <button @click="publishInvoice" class="bg-purple-700 rounded-full px-4 py-3">Create Invoice</button>
+                    <button v-if="!toggleEdit" type="submit" @click="saveDraft"
+                        class="bg-purple-950 rounded-full px-4 py-3">Save as Draft</button>
+                    <button v-if="!toggleEdit" type="submit" @click="publishInvoice"
+                        class="bg-purple-700 rounded-full px-4 py-3">Create Invoice</button>
+                    <button v-if="toggleEdit" type="submit" @click="editInvoice"
+                        class="bg-purple-900 rounded-full text-white py-3 px-4">Save Edit</button>
                 </div>
             </div>
         </form>
@@ -205,8 +314,8 @@ const deleteInvoiceItem = (id) => {
 </template>
 
 <style>
- ::-webkit-scrollbar {
-display: none;
+::-webkit-scrollbar {
+    display: none;
 }
 
 .input {
@@ -218,13 +327,13 @@ label {
     margin-bottom: 6px;
 }
 
-input, select {
+input,
+select {
     background: #1e2139;
     color: #fff;
     padding: 6px 4px;
     border-radius: 4px;
     border: none;
     outline: none;
-    
-}
-</style>
+
+}</style>

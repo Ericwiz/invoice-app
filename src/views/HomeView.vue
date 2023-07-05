@@ -4,6 +4,17 @@ import TheHome from '../components/TheHome.vue'
 
 <template>
   <main>
-    <TheHome />
+
+    <Suspense>
+      <template #default>
+        <TheHome />
+      </template>
+
+      <template #fallback>
+        <div class="text-white text-3xl underline uppercase">
+          looaddddinnnnng
+        </div>
+      </template>
+    </Suspense>
   </main>
 </template>

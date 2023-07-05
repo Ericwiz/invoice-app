@@ -2,19 +2,21 @@
 import { onMounted, ref } from 'vue';
 import TheNavigation from './components/TheNavigation.vue';
 import InvoiceModal from './components/InvoiceModal.vue';
+import WarningModal from './components/WarningModal.vue';
 import { useInvoiceModal } from './stores/invoiceModal';
 import { storeToRefs } from 'pinia';
 
 const store = useInvoiceModal()
+const invoices = ref([])
 
-const { invoiceModal } = storeToRefs(store)
+const { invoiceModal, modalActive } = storeToRefs(store)
 
 const mobile = ref(null)
 
 const checkScreen = () => {
   const windowWidth = window.innerWidth
 
-  if(windowWidth <= 750) {
+  if (windowWidth <= 750) {
     mobile.value = true
     return
   }
@@ -24,6 +26,7 @@ const checkScreen = () => {
 onMounted(() => {
   checkScreen()
   window.addEventListener('resize', checkScreen)
+  console.log(invoices.value)
 })
 </script>
 
@@ -31,6 +34,7 @@ onMounted(() => {
   <div class="flex bg-[#00031f] min-h-screen flex-col lg:flex-row" v-if="mobile === false">
     <TheNavigation />
     <div class="flex flex-col px-0 py-5 flex-1 relative">
+      <WarningModal v-if="modalActive" />
       <Transition name="invoiceModal">
         <InvoiceModal v-if="invoiceModal" />
       </Transition>
@@ -46,15 +50,17 @@ onMounted(() => {
 
 <style scoped>
 .invoiceModal-enter-active {
-  transition: opacity .5s ease;
+  transition: opacity .3s ease;
 }
+
 .invoiceModal-leave-active {
-  transition: opacity .5s ease;
+  transition: opacity .3s ease;
 }
+
 .invoiceModal-leave-to {
   opacity: 0;
 }
+
 .invoiceModal-enter-from {
-   opacity: 0;
-}
-</style>
+  opacity: 0;
+}</style>

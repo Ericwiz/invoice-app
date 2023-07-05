@@ -6,9 +6,17 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      name: 'home',
+      name: 'Home',
       component: HomeView
     },
+
+    {
+      path: '/invoice/:invoiceId',
+      name: 'Invoice',
+      props: route => ({invoiceId: route.params.invoiceId}),
+      component: () => import('../views/InvoiceView.vue')
+
+    }
   ]
 })
 
