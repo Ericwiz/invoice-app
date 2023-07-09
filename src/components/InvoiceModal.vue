@@ -5,13 +5,13 @@ import { useInvoiceModal } from '../stores/invoiceModal'
 import { useNow, useDateFormat } from '@vueuse/core'
 import { uid } from "uid";
 import db from '../firebase'
-import { addDoc, collection, doc, getDoc } from "firebase/firestore";
+import { addDoc, collection, doc, getDoc, updateDoc } from "firebase/firestore";
 import { storeToRefs } from "pinia";
 import { useRoute } from 'vue-router';
 
 const route = useRoute()
 const store = useInvoiceModal()
-const { modalStateText, toggleEdit } = storeToRefs(store)
+const { modalStateText, toggleEdit, useWatch } = storeToRefs(store)
 const { toggleWarningModal, toggle } = (store)
 
 
@@ -100,6 +100,11 @@ const uploadInvoice = async () => {
 
 const submitForm = () => {
     toggle()
+    if(toggleEdit.value) {
+        updateInvoice()
+        useWatch.value = true
+        return
+    }
     uploadInvoice()
 }
 
@@ -109,6 +114,7 @@ async function updateForm() {
         const docRef = doc(db, 'invoices', route.params.invoiceId);
         const currentInvoice = await getDoc(docRef)
         const invoice = currentInvoice.data()
+
         billerStreetAddress.value = invoice.billerStreetAddress
         billerCity.value = invoice.billerCity
         billerZipCode.value = invoice.billerZipCode
@@ -120,7 +126,6 @@ async function updateForm() {
         clientZipCode.value = invoice.clientZipCode
         clientCountry.value = invoice.clientCountry
         invoiceDate.value = invoice.invoiceDate
-        formattedDate.value = invoice.invoiceDateUnix
         paymentTerms.value = invoice.paymentTerms
         paymentDueDate.value = invoice.paymentDueDate
         paymentDueDateUnix.value = invoice.paymentDueDateUnix
@@ -141,6 +146,38 @@ onMounted( () => {
     updateForm()
 })
 
+// Update invoice
+
+const updateInvoice =  async() => {
+    const invoiceRef = doc(db, 'invoices', route.params.invoiceId)
+    try {
+        await updateDoc(invoiceRef, {
+            billerStreetAddress: billerStreetAddress.value,
+            billerCity: billerCity.value,
+            billerZipCode: billerZipCode.value,
+            billerCountry: billerCountry.value,
+            clientName: clientName.value,
+            clientEmail: clientEmail.value,
+            clientStreetAddress: clientStreetAddress.value,
+            clientCity: clientCity.value,
+            clientZipCode: clientZipCode.value,
+            clientCountry: clientCountry.value,
+            invoiceDate: invoiceDate.value,
+            invoiceDateUnix: formattedDate.value,
+            paymentTerms: paymentTerms.value,
+            paymentDueDate: paymentDueDate.value,
+            paymentDueDateUnix: paymentDueDateUnix.value,
+            productDescription: productDescription.value,
+            invoiceItemList: invoiceItemList.value,
+            invoiceTotal: invoiceTotal.value,
+        }
+        )
+    } catch (error) {
+        console.log(error)
+    }
+    
+}
+
 watch(paymentTerms, () => {
     const futureDate = new Date()
     paymentDueDateUnix.value = futureDate.setDate(futureDate.getDate() + parseInt(paymentTerms.value))
@@ -160,6 +197,8 @@ const addNewInvoiceItem = () => {
 const deleteInvoiceItem = (id) => {
     invoiceItemList.value = invoiceItemList.value.filter(item => item.id != id)
 }
+
+
 </script>
 
 <template>
@@ -305,7 +344,7 @@ const deleteInvoiceItem = (id) => {
                         class="bg-purple-950 rounded-full px-4 py-3">Save as Draft</button>
                     <button v-if="!toggleEdit" type="submit" @click="publishInvoice"
                         class="bg-purple-700 rounded-full px-4 py-3">Create Invoice</button>
-                    <button v-if="toggleEdit" type="submit" @click="editInvoice"
+                    <button v-if="toggleEdit" type="submit" @click="updateInvoice"
                         class="bg-purple-900 rounded-full text-white py-3 px-4">Save Edit</button>
                 </div>
             </div>

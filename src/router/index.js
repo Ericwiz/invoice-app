@@ -7,17 +7,28 @@ const router = createRouter({
     {
       path: '/',
       name: 'Home',
-      component: HomeView
+      component: HomeView,
+      meta: {
+        title: 'Invoices'
+      }
     },
 
     {
       path: '/invoice/:invoiceId',
       name: 'Invoice',
       props: route => ({invoiceId: route.params.invoiceId}),
-      component: () => import('../views/InvoiceView.vue')
+      component: () => import('../views/InvoiceView.vue'),
+      meta: {
+        title: 'Invoice Details'
+      }
 
     }
   ]
+})
+
+router.beforeEach((to, from, next) => {
+  document.title = `${to.meta.title}`
+  next()
 })
 
 export default router

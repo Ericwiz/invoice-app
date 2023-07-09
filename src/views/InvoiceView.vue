@@ -1,5 +1,6 @@
 <script setup>
 import InvoiceDetail from '../components/InvoiceDetail.vue';
+import LoaderComp from '../components/LoaderComp.vue';
 </script>
 
 <template>
@@ -8,7 +9,7 @@ import InvoiceDetail from '../components/InvoiceDetail.vue';
         <InvoiceDetail />
     </template>
     <template #fallback>
-        <h1>loadingggg</h1>
+        <LoaderComp />
     </template>
    </Suspense>
 </template>

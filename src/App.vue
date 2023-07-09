@@ -31,6 +31,7 @@ onMounted(() => {
 </script>
 
 <template>
+  <notifications position="top center" />
   <div class="flex bg-[#00031f] min-h-screen flex-col lg:flex-row" v-if="mobile === false">
     <TheNavigation />
     <div class="flex flex-col px-0 py-5 flex-1 relative">
