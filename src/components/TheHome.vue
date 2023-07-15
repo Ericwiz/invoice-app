@@ -33,23 +33,23 @@ const filterInvoice = computed(() => {
 </script>
 
 <template>
-    <div class="home text-white w-[80%] mx-auto">
+    <div class="home dark:text-white w-[95%] lg:w-[80%] mx-auto">
         <div class="flex mb-16 items-center">
             <div class="flex-1 flex flex-col space-y-5">
                 <h1 class="text-5xl font-serif font-bold">Invoices</h1>
                 <span class="font-serif text-lg font-bold">There are {{ totalInvoice }} total invoices</span>
             </div>
 
-            <div class="flex-1 flex justify-end space-x-36 items-center">
-                <select v-model="paid"   class="w-44 cursor-pointer text-lg bg-[#1e2139] shadow-md">
+            <div class="flex-1 flex justify-end space-x-24 items-center">
+                <select v-if="totalInvoice > 0" v-model="paid"   class="w-44 cursor-pointer text-lg dark:bg-[#1e2139] shadow-md">
                     <option disabled value="" class="text-xs">Filter by Status</option>
                     <option  value="pending"  class="cursor-pointer text-sm hover:bg-white hover:text-[#1e2139]">Pending</option>
                     <option value="paid"  class="cursor-pointer text-sm hover:bg-white hover:text-[#1e2139]">Paid</option>
                     <option value="draft"  class="cursor-pointer text-sm hover:bg-white hover:text-[#1e2139]">Draft</option>
                     <option v-if="paid.length > 0" value="all"  class="cursor-pointer text-sm hover:bg-white hover:text-[#1e2139]">Clear Filter</option>
                 </select>
-                <div @click="newInvoice()" class="px-2 py-1 rounded-3xl bg-[#7c5dfa] cursor-pointer flex items-center">
-                    <div class="inner-button mr-2 px-1 py-1 rounded-3xl items-center justify-center bg-white flex">
+                <div @click="newInvoice()" class="px-2 py-1 rounded-3xl bg-[#7c5dfa] cursor-pointer flex items-center w-fit">
+                    <div class="inner-button mr-2 px-1 py-1 rounded-3xl items-center justify-center bg-white flex flex-row">
                         <Icon icon="ph:plus-fill" class="text-purple-600 h-6 w-6" />
                     </div>
                     <span class="text-xs">New Invoice</span>

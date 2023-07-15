@@ -32,9 +32,9 @@ onMounted(() => {
 
 <template>
   <notifications position="top center" />
-  <div class="flex bg-[#00031f] min-h-screen flex-col lg:flex-row" v-if="mobile === false">
+  <div class="flex bg-[#dfe3e9] dark:bg-[#00031f] min-h-screen flex-col lg:flex-row" v-if="mobile === false">
     <TheNavigation />
-    <div class="flex flex-col px-0 py-5 flex-1 relative">
+    <div class="flex flex-col px-0 flex-1 relative">
       <WarningModal v-if="modalActive" />
       <Transition name="invoiceModal">
         <InvoiceModal v-if="invoiceModal" />
