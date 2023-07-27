@@ -22,7 +22,7 @@ export default {
         'bd-t': '0 0 20px 20px'
       },
       backgroundImage: {
-        signup: "url('src/assets/sign.jpg')"
+        signup: "url('/src/assets/sign.jpg')"
       }
     },
   },
