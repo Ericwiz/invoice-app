@@ -44,7 +44,7 @@ const logOut = async() => {
       <div class="border-r-4 border-grey-500 lg:border-b w-full"></div>
       <!-- Profile Picture -->
       <div class="w-full" v-if="currentUser !== null">
-        <button @click="logOut" class="w-full dark:text-white">sign out</button>
+        <button @click="logOut" class="w-fulltext-white">sign out</button>
       </div>
     </div>
   </header>
