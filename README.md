@@ -5,16 +5,17 @@ Welcome to the Invoice App! This is a detailed guide to help you understand and 
 ## Table of Contents
 
 1. [Introduction](#introduction)
-2. [Features](#features)
+2. [Live Site](#invoice App)
+3. [Features](#features)
    - [Authentication](#authentication)
    - [Create New Invoice](#create-new-invoice)
    - [Manage Invoice Status](#manage-invoice-status)
    - [Edit and Delete Invoice](#edit-and-delete-invoice)
    - [Dark and Light Mode](#dark-and-light-mode)
    - [Clean User Interface](#clean-user-interface)
-3. [Screenshots](#Screenshots)
-4. [Usage](#usage)
-5. [Future Improvements](#future-improvements)
+4. [Screenshots](#Screenshots)
+5. [Usage](#usage)
+6. [Future Improvements](#future-improvements)
 
 ## Introduction
 
