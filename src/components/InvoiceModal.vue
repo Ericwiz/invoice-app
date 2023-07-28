@@ -15,8 +15,7 @@ const store = useInvoiceModal()
 const { modalStateText, toggleEdit, useWatch } = storeToRefs(store)
 const { toggleWarningModal, toggle } = (store)
 const auth = getAuth()
-const userId = auth.currentUser.displayName
-console.log(userId)
+const userId = auth.currentUser.uid
 
 const formattedDate = useDateFormat(useNow(), 'MMM DD, YYYY')
 // const loading = ref(null)
