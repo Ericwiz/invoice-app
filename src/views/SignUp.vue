@@ -34,7 +34,7 @@ const signup = () => {
         <input type="password" v-model="password" placeholder="password" class="px-3" />
       </div>
 
-      <button class="bg-purple-800 py-3 px-5 rounded-lg text-white w-[95%]">Register</button>
+      <button class="bg-purple-800 py-3 px-5 rounded-lg text-white w-60">Register</button>
       <p class="text-white">
         <RouterLink to="/signin" class="text-blue-300">sign in</RouterLink>
         if you already registered before.

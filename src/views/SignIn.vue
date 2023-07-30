@@ -28,7 +28,7 @@ try {
           <input type="password" v-model="password" placeholder="password" class="px-3" />
         </div>
   
-        <button class="bg-purple-800 py-3 px-5 rounded-lg text-white w-full">Login</button>
+        <button class="bg-purple-800 py-3 px-5 rounded-lg text-white w-60">Login</button>
         <p class="dark:text-white">
           <RouterLink to="/signup" class="text-blue-300">sign up</RouterLink>
           if you don't have an account.
